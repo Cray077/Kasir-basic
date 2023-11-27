@@ -5,12 +5,12 @@ from tkinter import messagebox
 
 # ------------------------- Variable dan Window Root TKinter ------------------------------------
 
-
 barang_dibeli = []
 iid_pembelian = 0
 iid_barang = 0
 iid_jendela_edit = 0
 id_barang_dirubah = 0
+total = 0
 
 #------------------------ Fungsi dalam Aplikasi --------------------------------------------------
 def validate_entry(value):
@@ -36,10 +36,21 @@ def fungsi_hapus():
     update_total()
 
 def fungsi_checkout():
-    pass
+    global barang_dibeli
+    global total
+    for x in barang_dibeli:
+        for i in daftar_barang():
+            if i[0] == x[0]:
+                print(i)
+    uang_pelanggan = uang_pelanggan_entry.get()
+    kembalian = int(uang_pelanggan) - total
+    kembalian_entry.delete(0, "end")
+    kembalian_entry.insert(0, str(kembalian))
+    print(kembalian)
 
 def update_total():
     global barang_dibeli
+    global total
     total = 0
     for x in barang_dibeli:
         total += int(x[1]) * int(x[2])
@@ -56,11 +67,27 @@ def tambah_pembelian():
     for x in daftar:
         if x[0] == 0 or x[1] == nama:
             harga = (x[2] * int(jumlah))
-            tabel_pembelian.insert(parent='',index='end',iid=iid_pembelian ,text='', values=(x[0], x[1], harga))
+            tabel_pembelian.insert(parent='', index='end', iid = iid_pembelian , text='', values=(x[0], x[1], jumlah, harga))
             iid_pembelian += 1
             barang_dibeli.append([x[0], x[2], jumlah])
             update_total()
             break
+
+def fungsi_clear():
+    global iid_pembelian
+    global total
+    name_entry.delete(0, "end")
+    jumlah_entry.delete(0, "end")
+    total_entry.delete(0, "end")
+    uang_pelanggan_entry.delete(0, "end")
+    kembalian_entry.delete(0, "end")
+    total_entry.insert(0, "0")
+
+    for x in range(0, iid_pembelian):
+        tabel_pembelian.delete(x)
+    iid_pembelian = 0
+    total = 0
+
 
 #--------------------------- SQL -----------------------------------------------
 conn = sqlite3.connect("data.db")
@@ -265,6 +292,8 @@ total_entry.insert(0, 0)
 tambah_button = tk.Button(frame_entry, text="Tambah", command=fungsi_tambah)
 hapus_button = tk.Button(frame_entry, text="Hapus", command=fungsi_hapus)
 checkout_button = tk.Button(frame_entry, text="Checkout", command=fungsi_checkout)
+clear_button = tk.Button(frame_entry, text="Clear", command=fungsi_clear)
+
 
 uang_pelanggan_label = tk.Label(frame_entry, text="Uang Pelanggan", width=45)
 uang_pelanggan_entry = tk.Entry(frame_entry, width=45)
@@ -275,24 +304,25 @@ kembalian_entry = tk.Entry(frame_entry, width=45)
 
 # ------------------ Entry Grid -------------------------------------------------
 
-name_label.grid(row=0, column=0, columnspan=3)
-name_entry.grid(row=1, column=0, columnspan=3)
+name_label.grid(row=0, column=0, columnspan=4)
+name_entry.grid(row=1, column=0, columnspan=4)
 
-jumlah_label.grid(row=2, column=0, columnspan=3)
-jumlah_entry.grid(row=3, column=0, columnspan=3)
+jumlah_label.grid(row=2, column=0, columnspan=4)
+jumlah_entry.grid(row=3, column=0, columnspan=4)
 
 tambah_button.grid(row=4, column=0)
 hapus_button.grid(row=4, column=1)
 checkout_button.grid(row=4, column=2)
+clear_button.grid(row=4, column=3)
 
-total_label.grid(row=5, column=0, columnspan=3)
-total_entry.grid(row=6, column=0, columnspan=3)
+total_label.grid(row=5, column=0, columnspan=4)
+total_entry.grid(row=6, column=0, columnspan=4)
 
-uang_pelanggan_label.grid(row=7, column=0, columnspan=3)
-uang_pelanggan_entry.grid(row=8, column=0, columnspan=3)
+uang_pelanggan_label.grid(row=7, column=0, columnspan=4)
+uang_pelanggan_entry.grid(row=8, column=0, columnspan=4)
 
-kembalian_label.grid(row=9, column=0, columnspan=3)
-kembalian_entry.grid(row=10, column=0, columnspan=3)
+kembalian_label.grid(row=9, column=0, columnspan=4)
+kembalian_entry.grid(row=10, column=0, columnspan=4)
 
 
 # -------------- Tabel Pencarian / Daftar barang -----------------------------------------
@@ -354,6 +384,7 @@ tabel_pencarian.bind("<<TreeviewSelect>>", displaySelectedItem) #Menghubungkan t
 
 
 # -------------------------- TABLE PEMBELIAN / Daftar barang yang di beli -------------------------------------------
+
 tabel_pembelian = ttk.Treeview(frame_pembelian)
 
 tabel_pembelian['columns'] = ('id', 'nama barang', 'jumlah', 'total harga')
@@ -367,7 +398,7 @@ tabel_pembelian.column("total harga",anchor="center",width=80)
 tabel_pembelian.heading("#0",text="",anchor="center")
 tabel_pembelian.heading("id",text="ID",anchor="center")
 tabel_pembelian.heading("nama barang",text="Nama",anchor="center")
-tabel_pembelian.heading("jumlah",text="Harga",anchor="center")
+tabel_pembelian.heading("jumlah",text="Jumlah",anchor="center")
 tabel_pembelian.heading("total harga",text="Total Harga",anchor="center")
 
 tabel_pembelian.pack()
@@ -375,14 +406,4 @@ tabel_pembelian.pack()
 # --------------------------------------------------------------------------------------------------------------------
 
 root.mainloop()
-
-
-#tambah_database_barang()
-
-# tambah_barang(11, "Beng-Beng", 3000)
-# tambah_barang(12, "Tim Tam", 6000)
-# tambah_barang(13, "Taro", 5000)
-# tambah_barang(14, "Lays", 7000)
-# tambah_barang(15, "Doritos", 10000)
-
 conn.close()
