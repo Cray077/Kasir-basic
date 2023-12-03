@@ -256,12 +256,12 @@ def jendela_tambah_barang():
         id_barang_dirubah = tabel_pencarian.item(selectedItem)['values'][0]
 
     def fungsi_search(barang):
-        global id_barang_dirubah
+        global iid_jendela_edit
         hapus_daftar_barang(1)
         for x in daftar_barang():
             if barang.lower() in x[1].lower():
-                tabel_pencarian.insert(parent='', index='end', iid = id_barang_dirubah, text='', values=(x[0], x[1], x[2], x[3]))
-                iid_barang += 1
+                tabel_pencarian.insert(parent='', index='end', iid = iid_jendela_edit, text='', values=(x[0], x[1], x[2], x[3]))
+                iid_jendela_edit += 1
 
     tabel_pencarian.bind("<<TreeviewSelect>>", displaySelectedItem) #Menghubungkan tabel pencarian dengan fungsi displaySelectedItem()
 
