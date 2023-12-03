@@ -1,0 +1,14 @@
+general styling (make it look presentable)
+
+search function; // Done //
+    How it Works:
+    get a list of the item in database, and then search them using a for loop and if x in x statement;
+
+    
+
+auto refresh after exiting edit database menu;
+
+logging purchase history;
+    > make a database;
+    > value (date, item_list, total);
+    > export to excel;

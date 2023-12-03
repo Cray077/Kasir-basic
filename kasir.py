@@ -2,6 +2,7 @@ import tkinter as tk
 import sqlite3
 from tkinter import ttk
 from tkinter import messagebox
+import pickle
 
 # ------------------------- Variable dan Window Root TKinter ------------------------------------
 
@@ -23,7 +24,6 @@ def fungsi_tambah():
     if validate_entry(jumlah_entry.get()):
         tambah_pembelian()
     
-
 def fungsi_hapus():
     selectedItem = tabel_pembelian.selection()[0]
     id_barang = tabel_pembelian.item(selectedItem)['values'][0]
@@ -46,7 +46,6 @@ def fungsi_checkout():
     kembalian = int(uang_pelanggan) - total
     kembalian_entry.delete(0, "end")
     kembalian_entry.insert(0, str(kembalian))
-    print(kembalian)
 
 def update_total():
     global barang_dibeli
@@ -58,7 +57,6 @@ def update_total():
     total_entry.delete(0, "end")
     total_entry.insert(0, str(total))
     
-
 def tambah_pembelian():
     global iid_pembelian
     daftar = daftar_barang()
@@ -87,7 +85,7 @@ def fungsi_clear():
         tabel_pembelian.delete(x)
     iid_pembelian = 0
     total = 0
-
+    
 
 #--------------------------- SQL -----------------------------------------------
 conn = sqlite3.connect("data.db")
@@ -141,8 +139,6 @@ def jendela_tambah_barang():
             iid_jendela_edit = 0
             print("Daftar Kosong")
 
-
-
     def refresh_daftar_barang():
         global iid_jendela_edit
         hapus_daftar_barang(1)
@@ -150,7 +146,6 @@ def jendela_tambah_barang():
             tabel_pencarian.insert(parent='', index='end', iid=iid_jendela_edit, text='', values=(x[0], x[1], x[2], x[3]))
             iid_jendela_edit += 1
     
-
     def fungsi_tambah():
         global iid_jendela_edit
         try:
@@ -214,9 +209,9 @@ def jendela_tambah_barang():
     harga_label_database.grid(row=4, column=0, columnspan=3)
     harga_entry_database.grid(row=5, column=0, columnspan=3)
 
-    tambah_button.grid(row=6, column=0)
-    kurang_button.grid(row=6, column=1)
-    hapus_button.grid(row=6, column=2)
+    tambah_button.grid(row=6, column=0, pady=10)
+    kurang_button.grid(row=6, column=1, pady=10)
+    hapus_button.grid(row=6, column=2, pady=10)
 
     # -------------- Tabel Pencarian / Daftar barang -----------------------------------------
     # Bar Pencarian
@@ -240,11 +235,14 @@ def jendela_tambah_barang():
     tabel_pencarian.heading("jumlah",text="Jumlah",anchor="center")
     tabel_pencarian.heading("harga",text="Harga",anchor="center")
 
+    tombol_pencarian = tk.Button(frame_daftar_barang, text="Cari", command=lambda:fungsi_search(pencarian_entry.get()), padx=10)
 
-    pencarian_entry.grid(row=0, column=0)
-    tabel_pencarian.grid(row=1, column=0)
+    pencarian_entry.grid(row=0, column=0, pady=10)
+    tombol_pencarian.grid(row=0, column=1)
+    tabel_pencarian.grid(row=1, column=0, columnspan=2 , pady=30)
 
     def displaySelectedItem(a):
+
         global id_barang_dirubah
         # Bersihkan Entry (Hapus isi nama, uang pelanggan, kembalian)
         name_entry_database.delete(0, "end")
@@ -257,9 +255,18 @@ def jendela_tambah_barang():
         harga_entry_database.insert(0, tabel_pencarian.item(selectedItem)['values'][3])
         id_barang_dirubah = tabel_pencarian.item(selectedItem)['values'][0]
 
+    def fungsi_search(barang):
+        global id_barang_dirubah
+        hapus_daftar_barang(1)
+        for x in daftar_barang():
+            if barang.lower() in x[1].lower():
+                tabel_pencarian.insert(parent='', index='end', iid = id_barang_dirubah, text='', values=(x[0], x[1], x[2], x[3]))
+                iid_barang += 1
+
     tabel_pencarian.bind("<<TreeviewSelect>>", displaySelectedItem) #Menghubungkan tabel pencarian dengan fungsi displaySelectedItem()
 
     refresh_daftar_barang()
+    win.mainloop()
 
 # -------------------------- Tambah Database Barang ------------------------------------------------
 
@@ -270,8 +277,8 @@ root = tk.Tk()
 root.geometry("800x600")
 root.title("Kasir")
 
-frame_entry = tk.Frame(root)
-frame_daftar_barang = tk.Frame(root)
+frame_entry = tk.Frame(root, pady=25, padx=25)
+frame_daftar_barang = tk.Frame(root, pady=25, padx=25)
 frame_pembelian = tk.Frame(root)
 
 frame_entry.grid(row=0, column=0)
@@ -289,17 +296,18 @@ total_label = tk.Label(frame_entry, text="Total", width=45)
 total_entry = tk.Entry(frame_entry, width=45)
 total_entry.insert(0, 0)
 
-tambah_button = tk.Button(frame_entry, text="Tambah", command=fungsi_tambah)
-hapus_button = tk.Button(frame_entry, text="Hapus", command=fungsi_hapus)
-checkout_button = tk.Button(frame_entry, text="Checkout", command=fungsi_checkout)
-clear_button = tk.Button(frame_entry, text="Clear", command=fungsi_clear)
-
-
 uang_pelanggan_label = tk.Label(frame_entry, text="Uang Pelanggan", width=45)
 uang_pelanggan_entry = tk.Entry(frame_entry, width=45)
 
 kembalian_label = tk.Label(frame_entry, text="Kembalian", width=45)
 kembalian_entry = tk.Entry(frame_entry, width=45)
+
+label_insert = tk.Label(frame_entry, text=" ")
+
+tambah_button = tk.Button(frame_entry, text="Tambah", command=fungsi_tambah)
+hapus_button = tk.Button(frame_entry, text="Hapus", command=fungsi_hapus)
+checkout_button = tk.Button(frame_entry, text="Checkout", command=fungsi_checkout)
+clear_button = tk.Button(frame_entry, text="Clear", command=fungsi_clear)
 
 
 # ------------------ Entry Grid -------------------------------------------------
@@ -310,25 +318,23 @@ name_entry.grid(row=1, column=0, columnspan=4)
 jumlah_label.grid(row=2, column=0, columnspan=4)
 jumlah_entry.grid(row=3, column=0, columnspan=4)
 
-tambah_button.grid(row=4, column=0)
-hapus_button.grid(row=4, column=1)
-checkout_button.grid(row=4, column=2)
-clear_button.grid(row=4, column=3)
+total_label.grid(row=4, column=0, columnspan=4)
+total_entry.grid(row=5, column=0, columnspan=4)
 
-total_label.grid(row=5, column=0, columnspan=4)
-total_entry.grid(row=6, column=0, columnspan=4)
+uang_pelanggan_label.grid(row=6, column=0, columnspan=4)
+uang_pelanggan_entry.grid(row=7, column=0, columnspan=4)
 
-uang_pelanggan_label.grid(row=7, column=0, columnspan=4)
-uang_pelanggan_entry.grid(row=8, column=0, columnspan=4)
+kembalian_label.grid(row=8, column=0, columnspan=4)
+kembalian_entry.grid(row=9, column=0, columnspan=4)
 
-kembalian_label.grid(row=9, column=0, columnspan=4)
-kembalian_entry.grid(row=10, column=0, columnspan=4)
+label_insert.grid(row=10, column=0, columnspan=4)
 
+tambah_button.grid(row=11, column=0)
+hapus_button.grid(row=11, column=1)
+checkout_button.grid(row=11, column=2)
+clear_button.grid(row=11, column=3)
 
 # -------------- Tabel Pencarian / Daftar barang -----------------------------------------
-# Bar Pencarian
-pencarian_entry = tk.Entry(frame_daftar_barang)
-pencarian_entry.insert(0, "Cari")
 
 # Tabel
 tabel_pencarian = ttk.Treeview(frame_daftar_barang)
@@ -347,7 +353,7 @@ tabel_pencarian.heading("nama barang",text="Nama",anchor="center")
 tabel_pencarian.heading("jumlah",text="Jumlah",anchor="center")
 tabel_pencarian.heading("harga",text="Harga",anchor="center")
 
-def hapus_daftar_barang(a):
+def hapus_daftar_barang():
     global iid_barang
     for x in range(0, iid_barang):
         tabel_pencarian.delete(x)
@@ -355,21 +361,42 @@ def hapus_daftar_barang(a):
 
 def refresh_daftar_barang():
     global iid_barang
-    hapus_daftar_barang(1)
+    hapus_daftar_barang()
     for x in daftar_barang():
-        tabel_pencarian.insert(parent='', index='end', iid=iid_barang, text='',
-        values=(x[0], x[1], x[2], x[3]))
+        tabel_pencarian.insert(parent='', index='end', iid = iid_barang, text='', values=(x[0], x[1], x[2], x[3]))
         iid_barang += 1
 
+def fungsi_search(barang):
+    global iid_barang
+    hapus_daftar_barang()
+    for x in daftar_barang():
+        print(barang, x)
+        if barang.lower() in x[1].lower():
+            tabel_pencarian.insert(parent='', index='end', iid = iid_barang, text='', values=(x[0], x[1], x[2], x[3]))
+            iid_barang += 1
+            print(x)
+
 refresh_daftar_barang()
+
+# Bar Pencarian
+pencarian_entry = tk.Entry(frame_daftar_barang)
+pencarian_entry.insert(0, "")
+
+tombol_pencarian = tk.Button(frame_daftar_barang, text="Cari", command=lambda:fungsi_search(pencarian_entry.get()), padx=10)
 
 tombol_edit_database = tk.Button(frame_daftar_barang, text="Edit Database", command=jendela_tambah_barang)
 tombol_refresh_database = tk.Button(frame_daftar_barang, text="Refresh Database", command=refresh_daftar_barang)
 
+label_insert2 = tk.Label(frame_daftar_barang, text=" ")
+
 pencarian_entry.grid(row=0, column=0)
+tombol_pencarian.grid(row=0, column=1)
 tabel_pencarian.grid(row=1, column=0, columnspan=2)
-tombol_edit_database.grid(row=2, column=0)
-tombol_refresh_database.grid(row=2, column=1)
+
+label_insert2.grid(row=2, column=0, columnspan=2)
+
+tombol_edit_database.grid(row=3, column=0)
+tombol_refresh_database.grid(row=3, column=1)
 
 def displaySelectedItem(a):
     # Bersihkan Entry (Hapus isi nama, uang pelanggan, kembalian)
